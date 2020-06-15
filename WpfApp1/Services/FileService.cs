@@ -32,6 +32,7 @@ namespace WpfApp1.Services
                     using (StreamWriter sw = new StreamWriter(filename, false, System.Text.Encoding.Default))
                         formatter.Serialize(sw, User);
                     break;
+
                 case DialogService.TypeIndex.CSV:
                     var serialize = CsvSerializer.SerializeToString(User);
 
@@ -49,38 +50,33 @@ namespace WpfApp1.Services
             {
                 try
                 {
-                    using (StreamReader r =
-                    new StreamReader(
-                        $"days\\day" + i + ".json"))
+                    string file = File.ReadAllText("days\\day" + i + ".json");
+                    var result = JsonConvert.DeserializeObject<ObservableCollection<UserModel>>(file);
+
+                    foreach (var userModel in result)
                     {
-                        string json = r.ReadToEnd();
-                        var result = JsonConvert.DeserializeObject<ObservableCollection<UserModel>>(json);
+                        UserModel user = Users.FirstOrDefault(t => t.User == userModel.User);
 
-                        foreach (var userModel in result)
+                        if (user != null)
                         {
-                            UserModel user = new UserModel();
+                            user.Dayses.Add(new Days
+                            { DayNumber = i, Rank = userModel.Rank, Status = userModel.Status, StepCount = userModel.Steps });
 
-                            if (IsUserExist(userModel, Users, out user))
-                            {
-                                user.Dayses.Add(new Days
-                                { DayNumber = i, Rank = userModel.Rank, Status = userModel.Status, StepCount = userModel.Steps });
+                            if (user.MinStep > userModel.Steps)
+                                user.MinStep = userModel.Steps;
+                            if (user.MaxStep < userModel.Steps)
+                                user.MaxStep = userModel.Steps;
 
-                                if (user.MinStep > userModel.Steps)
-                                    user.MinStep = userModel.Steps;
-                                if (user.MaxStep < userModel.Steps)
-                                    user.MaxStep = userModel.Steps;
-
-                                user.SetAverage();
-                            }
-                            else
-                            {
-                                Users.Add(userModel);
-                                Users.Last().Dayses.Add(new Days
-                                { DayNumber = i, Rank = userModel.Rank, Status = userModel.Status, StepCount = userModel.Steps });
-                                Users.Last().MaxStep = userModel.Steps;
-                                Users.Last().MinStep = userModel.Steps;
-                                Users.Last().SetAverage();
-                            }
+                            user.SetAverage();
+                        }
+                        else
+                        {
+                            userModel.Dayses.Add(new Days
+                            { DayNumber = i, Rank = userModel.Rank, Status = userModel.Status, StepCount = userModel.Steps });
+                            userModel.MaxStep = userModel.Steps;
+                            userModel.MinStep = userModel.Steps;
+                            userModel.SetAverage();
+                            Users.Add(userModel);
                         }
                     }
                 }
@@ -92,20 +88,6 @@ namespace WpfApp1.Services
             }
 
             return Users;
-        }
-
-        bool IsUserExist(UserModel model, ObservableCollection<UserModel> inputCollection, out UserModel user)
-        {
-            foreach (var userModel in inputCollection)
-            {
-                if (userModel.User == model.User)
-                {
-                    user = userModel;
-                    return true;
-                }
-            }
-            user = model;
-            return false;
         }
     }
 }

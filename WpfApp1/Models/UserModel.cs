@@ -102,18 +102,10 @@ namespace WpfApp1
         public void SetAverage()
         {
             if (Dayses == null) throw new ArgumentNullException(nameof(Dayses));
-
-            double sum = 0;
-            int len = Dayses.Count;
-
-            AverageStep = Dayses.Sum(x => x.StepCount) / len;
+            AverageStep = (int)Dayses.Average(day => day.StepCount);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(prop));
-        }
+        public void OnPropertyChanged([CallerMemberName]string prop = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
     }
 }

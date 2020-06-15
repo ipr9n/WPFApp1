@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace WpfApp1.Services
 {
@@ -15,8 +14,10 @@ namespace WpfApp1.Services
 
         public bool SaveFileDialog(out TypeIndex ind)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "JSON File (*.json)|*.json|XML File (*.xml)|*.xml|CSV File (*.csv)|*csv";
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "JSON File (*.json)|*.json|XML File (*.xml)|*.xml|CSV File (*.csv)|*csv"
+            };
 
             if (saveFileDialog.ShowDialog() == true)
             {

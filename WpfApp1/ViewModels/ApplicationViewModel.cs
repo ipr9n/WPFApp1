@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
-using Newtonsoft.Json;
 using WpfApp1.Services;
 
 namespace WpfApp1
@@ -24,7 +22,7 @@ namespace WpfApp1
         {
             get
             {
-                SetDiagramPoint(_selectedUser);
+                SetDiagramPoint();
                 return _selectedUser;
             }
             set
@@ -34,7 +32,7 @@ namespace WpfApp1
             }
         }
 
-        private void SetDiagramPoint(UserModel user)
+        private void SetDiagramPoint()
         {
             try
             {
@@ -57,34 +55,30 @@ namespace WpfApp1
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName]string prop = "")
-        {
-            if (PropertyChanged != null)
-                PropertyChanged(this, new PropertyChangedEventArgs(prop));
-        }
-
-        private MyCommand saveCommand;
+        private MyCommand _saveCommand;
         public MyCommand SaveCommand
         {
             get
             {
-                return saveCommand ??
-                       (saveCommand = new MyCommand(obj =>
+                return _saveCommand ??
+                       (_saveCommand = new MyCommand(obj =>
+                       {
+                           if (obj == null)
                            {
-                               try
-                               {
-                                   DialogService saveDialog = new DialogService();
+                               MessageBox.Show("Выберите пользователя");
+                           }
+                           else
+                           {
+                               DialogService saveDialog = new DialogService();
 
-                                   if (saveDialog.SaveFileDialog(out DialogService.TypeIndex ind) == true)
-                                       fileService.SaveUser(saveDialog.FilePath, obj as UserModel,ind);
-                               }
-                               catch (Exception ex)
-                               {
-                                   MessageBox.Show($"Выберите пользователя \n"+ex.Message);
-                               }
-                           }, (obj) => Users.Count > 0));
+                               if (saveDialog.SaveFileDialog(out DialogService.TypeIndex ind) == true)
+                                   fileService.SaveUser(saveDialog.FilePath, obj as UserModel, ind);
+                           }
+                       }, (obj) => Users.Count > 0));
             }
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged([CallerMemberName]string prop = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
     }
 }
